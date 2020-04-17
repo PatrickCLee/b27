@@ -19,7 +19,7 @@ public class MainActivity extends AppCompatActivity {
         mesg = findViewById(R.id.mesg);                         //*6
     }
 
-    private MyAsyncTask myAsyncTask;
+    private MyAsyncTask myAsyncTask;                            //*18 宣告拉出來讓atest2也可用
     public void atest1(View view) {
         mesg.setText("");
         myAsyncTask = new MyAsyncTask();                        //*3
@@ -35,33 +35,33 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    private class MyAsyncTask extends AsyncTask<String,Object,String>{    //*1   *4一參數改為String  *9二參數改為Integer *G二再改為Object 下面也都改一改  再改三為String
-        private int total, i;                                               //*A
-        @Override                                               //*2 generate帶入所有的on方法
-        protected void onPreExecute() {                     //執行前
+    private class MyAsyncTask extends AsyncTask<String,Object,String>{    //*1   *4一參數改為String  *9二參數改為Integer *16二再改為Object 下面也都改一改  *17再改三為String
+        private int total, i;                                               //*10
+        @Override                                               //*2 generate帶入所有的on方法 並log
+        protected void onPreExecute() {                     //執行前      如果要連資料庫...等前置作業可在此做
             Log.v("brad","onPreExecute");
             super.onPreExecute();
             mesg.append("Start...\n");
         }
 
         @Override
-        protected void onPostExecute(String result) {          //執行後
+        protected void onPostExecute(String result) {          //執行後         *17 參數型別
             Log.v("brad","onPostExecute : " + result);
             mesg.append(result);
             super.onPostExecute(result);
         }
 
         @Override
-        protected void onProgressUpdate(Object... values) {   //更新進度  *E 改為Integer
-            Log.v("brad","onProgressUpdate" + values[0]);
+        protected void onProgressUpdate(Object... values) {   //更新進度  *14 改為Integer *16
+            Log.v("brad","onProgressUpdate: " + values[0]);
             super.onProgressUpdate(values);
-            mesg.append(values[1] + " -> " + values[0] + "% \n" );  //*F
+            mesg.append(values[1] + " -> " + values[0] + "% \n" );  //*15   *16 加傳參數 (values[0]是百分比 values[1]是names)
         }
 
         @Override
-        protected void onCancelled(String result) {            //取消的overload
-            Log.v("brad","onCancelled " + result);
-            mesg.append("onCancelled " + result + "\n");
+        protected void onCancelled(String result) {            //取消的overload    *17 參數型別
+            Log.v("brad","onCancelled " + result);                      //*18
+            mesg.append("onCancelled " + result );
             super.onCancelled(result);
         }
 
@@ -72,23 +72,23 @@ public class MainActivity extends AppCompatActivity {
         }
 
         @Override
-        protected String doInBackground(String... names) {      //*1 必須要實做的方法  *5改參數為String... names
+        protected String doInBackground(String... names) {      //*1 必須要實做的方法  *4改參數為String... names    *17回傳型別
             Log.v("brad","doInBackground");
-            total = names.length;                               //*B
-            for(String name : names){                           //*5
-                i++;                                            //*C
+            total = names.length;                                           //*11
+            for(String name : names){                           //*4
+                i++;                                                                //*12
                 try {
-                    Thread.sleep(3*1000);                 //*7
-                }catch (Exception e){     }
-                Log.v("brad",name);
+                    Thread.sleep(3*1000);                       //*7
+                }catch (Exception e){}
+                Log.v("brad",name);                         //*4
 
-//                mesg.append(name + "\n");
-                publishProgress((int)Math.ceil(i*1.0/total*100), name); //*8 *D 傳參數
+//                mesg.append(name + "\n");                      //*6  這個方法必須在main Thread(UI Thread)執行,此處是分開的Thread
+                publishProgress((int)Math.ceil(i*1.0/total*100), name); //*8 執行此方法會觸發onProgressUpdate  *13 傳int參數   *16 加傳name
             }
             if(isCancelled()){
                 return "Cancel";
             }else{
-                return "Good Game";
+                return "Good Game";                             //*17
             }
         }
     }
